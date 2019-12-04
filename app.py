@@ -24,18 +24,6 @@ def welcome():
 # Flask Setup
 app = Flask(__name__)
 
-#List all routes that are available.
-@app.route("/")
-def welcome():
-    return (
-        f"Available Routes:<br/>"
-        f"/api/v1.0/precipitation<br/>"
-        f"/api/v1.0/stations<br/>"
-        f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/<start>/<end>"
-    )
-
-
 
 @app.route("/api/v1.0/precipitation")
 def precipitation():
