@@ -8,6 +8,15 @@ from sqlalchemy.orm import Session
 from sqlalchemy import create_engine, func
 
 from flask import Flask, jsonify
+
+engine =create_engine("sqlite:///Resources/hawaii.sqlite")
+Base = automap_base()
+# reflect the tables
+Base.prepare(engine, reflect=True)
+Base.classes.keys()
+Measurement = Base.classes.measurement
+Station = Base.classes.station
+
 # Flask Setup
 app = Flask(__name__)
 
@@ -19,11 +28,9 @@ def welcome():
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/<start> and /api/v1.0/<start>/<end>"
+        f"/api/v1.0/start<br/>"
+        f"/api/v1.0/start/end"
     )
-# Flask Setup
-app = Flask(__name__)
-
 
 @app.route("/api/v1.0/precipitation")
 def precipitation():
@@ -39,7 +46,6 @@ def precipitation():
     return jsonify(precipitation)
 #using date as the key and prcp as the value.
 
-
 @app.route("/api/v1.0/stations")
 def stations():
     #query
@@ -50,7 +56,6 @@ def stations():
     session.close()
 
     return jsonify(all_stations)
-
 
 @app.route("/api/v1.0/tobs")
 def tobs():
@@ -64,10 +69,10 @@ def tobs():
     filter(Measurement.date>='2016-08-23').all()
     tobs_lastyear = list(np.ravel(results))
     session.close()
-
+    
     return jsonify(tobs_lastyear)
 
-@app.route("/api/v1.0/startdate")
+@app.route("/api/v1.0/start")
 def weather(start_date):
     session = Session(engine)
     weather_condition = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
@@ -76,8 +81,8 @@ def weather(start_date):
     session.close() 
     return jsonify(weather_since)
 
-@app.route("/api/v1.0/<start>/<end>")
-def weather(start_date, end_date):
+@app.route("/api/v1.0/start/end")
+def condition(start_date, end_date):
     session = Session(engine)
     weather = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
         filter(Measurement.date >= start_date).filter(Measurement.date <= end_date).all()
