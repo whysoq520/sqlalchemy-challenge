@@ -36,14 +36,10 @@ def welcome():
 def precipitation():
     #query
     session = Session(engine)
-    prcp=session.query(Measurement.date, Measurement.prcp).all
-    session.close()
-    #create dictionary
-    precipitation=[]
-    for date, prcp in result:
-        prcp_dict={date:prcp}
-        precipitation.append(dict)
-    return jsonify(precipitation)
+    result =session.query(Measurement.date, Measurement.prcp).all()
+    prcp = dict(result)
+    session.close()    
+    return jsonify(prcp)
 #using date as the key and prcp as the value.
 
 @app.route("/api/v1.0/stations")
@@ -51,7 +47,7 @@ def stations():
     #query
     session=Session(engine)
     station=session.query(Measurement.station).all()
-    session.close()
+    
     all_stations = list(np.ravel(station))
     session.close()
 
@@ -74,12 +70,17 @@ def tobs():
 
 @app.route("/api/v1.0/start")
 def weather(start_date):
+    start_date =input("Enter a date")
     session = Session(engine)
-    weather_condition = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
+    if start_date in Measurement.date:
+        weather_condition = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
         filter(Measurement.date >= start_date).all()
-    weather_since = list(np.ravel(weather_condition))
-    session.close() 
-    return jsonify(weather_since)
+        return(weather_condition)
+    return jsonify({"error": f"The date {start_date} not found."}), 404
+
+
+
+
 
 @app.route("/api/v1.0/start/end")
 def condition(start_date, end_date):
