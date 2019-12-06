@@ -28,8 +28,8 @@ def welcome():
         f"/api/v1.0/precipitation<br/>"
         f"/api/v1.0/stations<br/>"
         f"/api/v1.0/tobs<br/>"
-        f"/api/v1.0/start<br/>"
-        f"/api/v1.0/start/end"
+        f"/api/v1.0/start/<start><br/>"
+        f"/api/v1.0/start/end/<start>/<end>"
     )
 
 @app.route("/api/v1.0/precipitation")
@@ -68,25 +68,24 @@ def tobs():
     
     return jsonify(tobs_lastyear)
 
-@app.route("/api/v1.0/start")
+@app.route("/api/v1.0/start/<start_date>")
 def weather(start_date):
-    start_date =input("Enter a date")
     session = Session(engine)
-    if start_date in Measurement.date:
-        weather_condition = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
+    weather_condition = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
         filter(Measurement.date >= start_date).all()
-        return(weather_condition)
-    return jsonify({"error": f"The date {start_date} not found."}), 404
+    weather_since = list(np.ravel(weather_condition))
+    session.close() 
+    return jsonify(weather_since)
 
 
 
 
 
-@app.route("/api/v1.0/start/end")
-def condition(start_date, end_date):
+@app.route("/api/v1.0/start/end/<start>/<end>")
+def condition(start, end):
     session = Session(engine)
     weather = session.query(func.min(Measurement.tobs), func.avg(Measurement.tobs), func.max(Measurement.tobs)).\
-        filter(Measurement.date >= start_date).filter(Measurement.date <= end_date).all()
+        filter(Measurement.date >= start).filter(Measurement.date <= end).all()
     weather_betweendates = list(np.ravel(weather))
         
     return jsonify(weather_betweendates)
